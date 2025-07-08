@@ -1,0 +1,93 @@
+-- 🥊 Auto Punch Toggle con equipamiento persistente y Auto Fuerza OP
+
+-- Auto Punch Toggle
+if _G.AutoPunchToggle == nil then
+    _G.AutoPunchToggle = false
+end
+
+_G.AutoPunchToggle = not _G.AutoPunchToggle
+
+if _G.AutoPunchToggle then
+    warn("✅ Auto Punch ACTIVADO")
+else
+    warn("⛔ Auto Punch DESACTIVADO")
+    return
+end
+
+-- Auto Fuerza OP Toggle
+if _G.AutoFuerzaToggle == nil then
+    _G.AutoFuerzaToggle = false
+end
+
+_G.AutoFuerzaToggle = not _G.AutoFuerzaToggle
+
+if _G.AutoFuerzaToggle then
+    warn("✅ Auto Fuerza OP ACTIVADO")
+else
+    warn("⛔ Auto Fuerza OP DESACTIVADO")
+    return
+end
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local backpack = player:WaitForChild("Backpack")
+local character = player.Character or player.CharacterAdded:Wait()
+local hand = "rightHand"  -- Cambiar dependiendo de la mano a usar
+
+local function getMuscleEvent()
+    return player:FindFirstChild("muscleEvent")
+end
+
+-- Actualizar referencias al reaparecer
+player.CharacterAdded:Connect(function(char)
+    character = char
+end)
+
+player.ChildAdded:Connect(function(child)
+    if child.Name == "Backpack" then
+        backpack = child
+    end
+end)
+
+-- 🥊 Auto Punch Loop
+task.spawn(function()
+    while _G.AutoPunchToggle do
+        local muscleEvent = getMuscleEvent()
+        character = player.Character  -- Asegurarse de que el personaje esté actualizado
+        if character and character:FindFirstChild("Humanoid") and muscleEvent then
+            local punchEquipped = character:FindFirstChild("Punch")  -- Nombre de la herramienta de golpe
+            local punchInBackpack = backpack:FindFirstChild("Punch")  -- Nombre de la herramienta de golpe
+
+            -- Equipar Punch si no está equipado
+            if not punchEquipped and punchInBackpack then
+                character.Humanoid:EquipTool(punchInBackpack)
+            end
+
+            -- Ejecutar el golpe
+            muscleEvent:FireServer("punch", hand)
+        end
+        task.wait(0.1)  -- Espera más razonable
+    end
+end)
+
+-- 💪 Auto Fuerza OP Loop (Ejecutar fuerza o habilidad OP)
+task.spawn(function()
+    while _G.AutoFuerzaToggle do
+        local muscleEvent = getMuscleEvent()
+        character = player.Character  -- Asegurarse de que el personaje esté actualizado
+        if character and character:FindFirstChild("Humanoid") and muscleEvent then
+            local fuerzaEquipada = character:FindFirstChild("Pushups")  -- Nombre de la herramienta de Fuerza OP
+            local fuerzaEnMochila = backpack:FindFirstChild("Pushups")  -- Nombre de la herramienta de Fuerza OP
+
+            -- Equipar Fuerza OP si no está equipada
+            if not fuerzaEquipada and fuerzaEnMochila then
+                character.Humanoid:EquipTool(fuerzaEnMochila)
+            end
+
+            -- Ejecutar Fuerza OP (cambia "Pushups" a la habilidad o comando correspondiente)
+            muscleEvent:FireServer("Pushups")  -- Aquí se activa la habilidad
+        end
+        task.wait(0.1)  -- Espera más razonable
+    end
+end)
